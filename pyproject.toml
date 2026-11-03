@@ -5,6 +5,13 @@ description = "Flow-matching molecular generation and scaffold decoration with a
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE", "src/morph/_vendor/licenses/*_LICENSE"]
+authors = [
+    { name = "Malte Franke" },
+    { name = "Stefan P. Schmid" },
+    { name = "Zarko Ivkovic" },
+    { name = "Kjell Jorner" },
+    { name = "Andreas Krause" },
+]
 keywords = ["molecular-generation", "flow-matching", "scaffold-decoration"]
 requires-python = ">=3.11,<3.14"
 dependencies = [
@@ -50,6 +57,14 @@ channels = ["conda-forge", "bioconda"]
 packages = ["qvina=2.1.0=hfd2156b_8", "mgltools=1.5.7=h9ee0642_1"]
 micromamba-url = "https://conda.anaconda.org/conda-forge/linux-64/micromamba-2.9.0-0.tar.bz2"
 micromamba-sha256 = "8761c382127e6363bd9e0a2451aa3ef90d071a79133f736e2f759a3bf13040dd"
+
+[project.urls]
+Homepage = "https://github.com/maltefranke/morph-chem"
+Repository = "https://github.com/maltefranke/morph-chem"
+Documentation = "https://github.com/maltefranke/morph-chem/tree/main/docs"
+Issues = "https://github.com/maltefranke/morph-chem/issues"
+Paper = "https://arxiv.org/abs/2606.07239"
+Models = "https://huggingface.co/maltefranke/morph"
 
 [project.scripts]
 morph = "morph.cli:cli"

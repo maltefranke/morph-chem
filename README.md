@@ -11,7 +11,7 @@
 
 <p align="center">
   <a href="https://arxiv.org/abs/2606.07239v1">Paper: arXiv v1 · June 2026</a> ·
-  <a href="pyproject.toml">Code version: 0.1.0</a>
+  <a href="https://github.com/maltefranke/morph-chem/blob/main/pyproject.toml">Code version: 0.1.0</a>
 </p>
 
 <p align="center">
@@ -28,15 +28,15 @@ The sampler combines those predictions with time schedules to move, insert,
 delete, and substitute atoms and bonds.
 
 <p align="center">
-  <a href="media/main_figure.pdf">
-    <img src="media/main_figure.png" width="900" alt="Morph generates molecules by inserting, deleting, substituting, and moving atoms over generation time.">
+  <a href="https://github.com/maltefranke/morph-chem/blob/main/media/main_figure.pdf">
+    <img src="https://raw.githubusercontent.com/maltefranke/morph-chem/main/media/main_figure.png" width="900" alt="Morph generates molecules by inserting, deleting, substituting, and moving atoms over generation time.">
   </a>
 </p>
 
 ## Installation
 
-Python 3.13 is recommended; Python 3.11–3.13 is supported. The first PyPI
-release is being prepared. Once it is available, install in a virtual environment:
+Python 3.13 is recommended; Python 3.11–3.13 is supported. Install
+[from PyPI](https://pypi.org/project/morph-chem/) in a virtual environment:
 
 ```bash
 python3.13 -m venv .venv
@@ -44,9 +44,8 @@ source .venv/bin/activate
 python -m pip install morph-chem
 ```
 
-To install the current source checkout before publication, use
-`python -m pip install .` from the repository root in your environment.
-The package provides the `morph` command and Python API. Training, preprocessing,
+To install a source checkout instead, use `python -m pip install .` from the
+repository root in your environment. The package provides the `morph` command and Python API. Training, preprocessing,
 and the evaluation scripts use a source checkout; see [Training quick start](#training-quick-start).
 
 ## Pretrained models
@@ -85,7 +84,7 @@ weights). `morph models list` discovers shortcuts from the Hub's `catalog.json`;
 `--offline` reads the cached catalog. Adding a release requires updating that
 manifest, with each entry pointing to its model release. You can also pass any
 Hugging Face `owner/repo` with `subfolder` and `revision`, or load a local bundle
-with `load_pretrained(weights_dir="/path/to/bundle")`. See [inference](docs/inference.md) for sampling,
+with `load_pretrained(weights_dir="/path/to/bundle")`. See [inference](https://github.com/maltefranke/morph-chem/blob/main/docs/inference.md) for sampling,
 offline use, checkpoint selection and adding new model releases.
 
 ## Reproducibility
@@ -109,7 +108,7 @@ tar -xzf geom/explicit_h/training_bundle.tar.gz
 ```
 
 Each bundle also includes a portable training recipe; its changes from the
-original run are recorded alongside it. See the [training bundle guide](docs/reproducibility.md)
+original run are recorded alongside it. See the [training bundle guide](https://github.com/maltefranke/morph-chem/blob/main/docs/reproducibility.md)
 for setup, data requirements and resuming. Version identifiers and checksums
 are recorded in the release metadata and bundle manifests.
 
@@ -152,7 +151,7 @@ set `MORPH_SCRATCH` before running setup. Training uses W&B by default; add
 
 For CrossDocked, use `bash setup_env.sh --extra crossdocked`. This also installs
 the optional docking tools on Linux x86_64; see the
-[docking setup](docs/evaluation.md#crossdocked-docking-requirements-and-reproduction-limits).
+[docking setup](https://github.com/maltefranke/morph-chem/blob/main/docs/evaluation.md#crossdocked-docking-requirements-and-reproduction-limits).
 
 `scripts/preprocess.py` downloads missing source files into `data/<dataset>/raw/`,
 processes the train/validation/test splits, and computes vocabularies and training
@@ -171,7 +170,7 @@ python run.py defaults="$dataset/implicit_h"
 
 Set `dataset` to `geom` or `chembl3d` for this option. It uses a separate
 `data/<dataset>_implicit_h/` cache with its own vocabularies and statistics.
-See [training and data options](docs/training.md) for filters and optional local
+See [training and data options](https://github.com/maltefranke/morph-chem/blob/main/docs/training.md) for filters and optional local
 source overrides.
 
 GPU training compiles both current and EMA models by default. For short smoke
@@ -224,13 +223,13 @@ checksums live under `${XDG_CACHE_HOME:-~/.cache}/morph`; set `MORPH_CACHE_DIR` 
 choose another location shared by training processes. CrossDocked
 fine-tuning uses the pretrained model's ligand vocabulary and statistics;
 the released caches match `chembl3d_max100_implicit_h/processed`. See
-[training and fine-tuning](docs/training.md) for their semantics and LoRA options.
+[training and fine-tuning](https://github.com/maltefranke/morph-chem/blob/main/docs/training.md) for their semantics and LoRA options.
 
 ## LogP-conditioned generation
 
 Absolute-logP-conditioned generation is available for QM9 and GEOM through
 `defaults=qm9/logp` and `defaults=geom/logp`, with fully trainable pretrained
-backbones. See [logP fine-tuning](docs/training.md#logp-conditioned-generation)
+backbones. See [logP fine-tuning](https://github.com/maltefranke/morph-chem/blob/main/docs/training.md#logp-conditioned-generation)
 for property preparation, checkpoints, and validation metrics.
 
 ## Reading the implementation
@@ -247,27 +246,27 @@ and recenters coordinates. Output coordinates are restored to Angstroms.
 
 | Entry point | Purpose |
 | --- | --- |
-| [run.py](run.py) | Training, validation, and prediction orchestration |
-| [scripts/preprocess.py](scripts/preprocess.py) | Automatic dataset download, processing and statistics |
-| [model/build.py](src/morph/model/build.py) | Shared model and metric construction |
-| [flow_matching/](src/morph/flow_matching/) | Assignment, interpolation, schedules, and integration |
-| [dataset/core/](src/morph/dataset/core/) | Molecular batches and structured insertion targets |
-| [model/lightning/](src/morph/model/lightning/) | Training lifecycle, losses, sampling, and EMA |
-| [configs/](configs/) | Dataset and model recipes |
-| [tests/model/](tests/model/) | Regression tests grouped by subject |
+| [run.py](https://github.com/maltefranke/morph-chem/blob/main/run.py) | Training, validation, and prediction orchestration |
+| [scripts/preprocess.py](https://github.com/maltefranke/morph-chem/blob/main/scripts/preprocess.py) | Automatic dataset download, processing and statistics |
+| [model/build.py](https://github.com/maltefranke/morph-chem/blob/main/src/morph/model/build.py) | Shared model and metric construction |
+| [flow_matching/](https://github.com/maltefranke/morph-chem/tree/main/src/morph/flow_matching/) | Assignment, interpolation, schedules, and integration |
+| [dataset/core/](https://github.com/maltefranke/morph-chem/tree/main/src/morph/dataset/core/) | Molecular batches and structured insertion targets |
+| [model/lightning/](https://github.com/maltefranke/morph-chem/tree/main/src/morph/model/lightning/) | Training lifecycle, losses, sampling, and EMA |
+| [configs/](https://github.com/maltefranke/morph-chem/tree/main/configs/) | Dataset and model recipes |
+| [tests/model/](https://github.com/maltefranke/morph-chem/tree/main/tests/model/) | Regression tests grouped by subject |
 
-The [model contract](src/morph/model/README.md) documents tensor shapes,
+The [model contract](https://github.com/maltefranke/morph-chem/blob/main/src/morph/model/README.md) documents tensor shapes,
 coordinate conventions, conditioning ports, and the loss-to-head mapping.
 
 ## Further documentation
 
-- [Training, configurations, and fine-tuning](docs/training.md)
-- [Inference and model bundles](docs/inference.md)
-- [Reproducing released models and training runs](docs/reproducibility.md)
-- [Runtime, compilation, and performance](docs/performance.md)
-- [Running on a Slurm cluster](docs/slurm.md)
-- [Development and regression checks](docs/development.md)
-- [Release metadata](docs/release.md)
+- [Training, configurations, and fine-tuning](https://github.com/maltefranke/morph-chem/blob/main/docs/training.md)
+- [Inference and model bundles](https://github.com/maltefranke/morph-chem/blob/main/docs/inference.md)
+- [Reproducing released models and training runs](https://github.com/maltefranke/morph-chem/blob/main/docs/reproducibility.md)
+- [Runtime, compilation, and performance](https://github.com/maltefranke/morph-chem/blob/main/docs/performance.md)
+- [Running on a Slurm cluster](https://github.com/maltefranke/morph-chem/blob/main/docs/slurm.md)
+- [Development and regression checks](https://github.com/maltefranke/morph-chem/blob/main/docs/development.md)
+- [Release metadata](https://github.com/maltefranke/morph-chem/blob/main/docs/release.md)
 
 ## Citation
 
@@ -285,7 +284,7 @@ If you use Morph, please cite our [paper](https://arxiv.org/abs/2606.07239):
 }
 ```
 
-Machine-readable citation metadata is available in [CITATION.cff](CITATION.cff).
-Morph is distributed under the [MIT License](LICENSE). Upstream licenses and
+Machine-readable citation metadata is available in [CITATION.cff](https://github.com/maltefranke/morph-chem/blob/main/CITATION.cff).
+Morph is distributed under the [MIT License](https://github.com/maltefranke/morph-chem/blob/main/LICENSE). Upstream licenses and
 source attribution for vendored code and adaptations are collected in the
-[third-party inventory](src/morph/_vendor/README.md).
+[third-party inventory](https://github.com/maltefranke/morph-chem/blob/main/src/morph/_vendor/README.md).

@@ -25,6 +25,19 @@ Related: [bundle format](inference.md#add-geom-qm9-or-another-model),
 - Publish compatible bundles before adding catalog aliases. Direct repository/subfolder/revision
   and local loading need no catalog entry or Python registry change.
 
+## Publishing to PyPI
+
+[release.yml](../.github/workflows/release.yml) publishes `morph-chem` through PyPI
+Trusted Publishing (owner `maltefranke`, repository `morph-chem`, workflow
+`release.yml`, environment `pypi`); no API token is stored.
+
+1. Bump `version` in `pyproject.toml` and the README header; merge to `main`.
+2. Publish a GitHub release tagged `vX.Y.Z` matching that version. The workflow
+   rejects mismatched tags, builds, checks, and uploads the sdist and wheel.
+3. Verify in a fresh environment: `python -m pip install morph-chem==X.Y.Z`.
+
+README links are absolute GitHub URLs so they also render on PyPI.
+
 ## Documented model releases
 
 | Model | Completed epochs |
