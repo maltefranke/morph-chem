@@ -1,0 +1,87 @@
+{
+  "geom-logp": {
+    "label": "GEOM-Drugs \u00b7 logP",
+    "kind": "logp",
+    "checkpoint": "geom/logp_full/final.ckpt",
+    "revision": "a4c019be837c941cdf4a03f80fe8283dc9ac91ad",
+    "sha256": "701ec87a29e00d0f4fdf6789f06512994fa3dab579fd1581e2b14a8632c8d059",
+    "prior": [
+      3,
+      76
+    ],
+    "max_atoms": 82,
+    "description": "Target lipophilicity for drug-like molecules. Typical targets lie around 0\u20135; extreme values extrapolate."
+  },
+  "qm9-logp": {
+    "label": "QM9 \u00b7 logP",
+    "kind": "logp",
+    "checkpoint": "qm9/logp_full/final.ckpt",
+    "revision": "a4c019be837c941cdf4a03f80fe8283dc9ac91ad",
+    "sha256": "8e11f34868dc779d778648f8bd50dc359b9249ba374f2d0d07e27a8663590940",
+    "prior": [
+      3,
+      34
+    ],
+    "max_atoms": 40,
+    "description": "Target lipophilicity for small molecules. Most held-out targets lie between \u22123 and 3."
+  },
+  "geom-count": {
+    "label": "GEOM-Drugs \u00b7 atom count",
+    "kind": "count",
+    "checkpoint": "geom/atom_count_fourier_full/final.ckpt",
+    "revision": "a4c019be837c941cdf4a03f80fe8283dc9ac91ad",
+    "sha256": "2d0247b51c67985a3b5b4234a4d9083694b6bb3c4c0937ce10c03f04f2f9e49d",
+    "prior": [
+      3,
+      120
+    ],
+    "max_atoms": 192,
+    "description": "Target the total number of atoms, including H. Counts above 71 extrapolate beyond the empirical target range; validity decreases at large N."
+  },
+  "geom": {
+    "label": "GEOM-Drugs \u00b7 unconditional",
+    "kind": "unconditional",
+    "checkpoint": "geom/explicit_h/epoch_100.ckpt",
+    "revision": "a4c019be837c941cdf4a03f80fe8283dc9ac91ad",
+    "sha256": "0ab5ad7247b5518858c8cb6aa7c4102352e8fe09cbb6744c33a4c784c85b8587",
+    "prior": [
+      3,
+      76
+    ],
+    "max_atoms": null,
+    "description": "Generate drug-like molecules without a property target. Explicit hydrogens; epoch 100."
+  },
+  "qm9": {
+    "label": "QM9 \u00b7 unconditional",
+    "kind": "unconditional",
+    "checkpoint": "qm9/explicit_h/epoch_1500.ckpt",
+    "revision": "a4c019be837c941cdf4a03f80fe8283dc9ac91ad",
+    "sha256": "90b418b9aa5de7cdb2109df20bc4ded1c46159b3abd10595750a5b583d0f9f87",
+    "prior": [
+      3,
+      34
+    ],
+    "max_atoms": null,
+    "description": "Generate small molecules without a property target. Explicit hydrogens; epoch 1,500."
+  },
+  "chembl-explicit": {
+    "label": "ChEMBL3D \u00b7 explicit H",
+    "kind": "unconditional",
+    "checkpoint": "chembl3d/explicit_h/epoch_400.ckpt",
+    "revision": "a4c019be837c941cdf4a03f80fe8283dc9ac91ad",
+    "sha256": "efb5c2f85972df19eca85d2d69cb56f6f52453d91ee26293b3e68b299e2bac8f",
+    "prior": null,
+    "max_atoms": null,
+    "description": "Generate ChEMBL3D molecules with explicit hydrogen atoms. Epoch 400."
+  },
+  "chembl-implicit": {
+    "label": "ChEMBL3D \u00b7 heavy atoms",
+    "kind": "unconditional",
+    "checkpoint": "chembl3d/implicit_h/epoch_300.ckpt",
+    "revision": "a4c019be837c941cdf4a03f80fe8283dc9ac91ad",
+    "sha256": "ec003ebc2e6412b3fcfdf05b9de145f411d602974d5f83b08c55e2e74742184e",
+    "prior": null,
+    "max_atoms": null,
+    "description": "Generate ChEMBL3D molecules with implicit hydrogens. N counts heavy atoms only. Epoch 300."
+  }
+}

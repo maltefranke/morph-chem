@@ -1,0 +1,7 @@
+# Inclusive total-atom limit, applied before hydrogen removal.
+defaults:
+  - /data/chembl3d/chembl3d@_here_
+  - _self_
+
+max_atoms: 100
+cache_name: ${data.dataset_name}_max${data.max_atoms}${if:${eq:${data.hydrogen_mode},implicit},_implicit_h,''}

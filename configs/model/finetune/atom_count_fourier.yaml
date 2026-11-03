@@ -1,0 +1,16 @@
+# Earlier GEOM delta encoder and gated entry point, retaining the LoRA recipe.
+defaults:
+  - /model/finetune/atom_count@_here_
+  - _self_
+
+backbone:
+  _target_: morph.model.backbones.conditional_dit.ConditionalDiTBackbone
+  use_graph_cond: true
+
+module:
+  model:
+    _target_: morph.model.finetune.atom_count.FourierAtomCountDiTBackboneWithHeads
+    delta_scale: 128.0
+    delta_hidden_dim: 256
+    delta_min_period: 512.0
+    delta_max_period: 4096.0

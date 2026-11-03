@@ -1,0 +1,123 @@
+## Molecular DiT: the repository's first-class generative backbone.
+##
+## This intentionally keeps charge out of the state and adds neither an
+## equivariant lane nor an evolving dense pair state.  It retains the atom-count
+## condition: time plus current graph size disambiguates otherwise identical
+## local states and is especially useful while insertion/deletion is active.
+defaults:
+  - /optimizer: muon_aux_adam
+  - /loss_weights: tuned_weights
+  - _self_
+
+rotate: true
+n_augmentations: 1
+
+integrator: ${integrator.integrator}
+
+beta_sched:
+  _target_: torch.distributions.Beta
+  concentration1: 2.0
+  concentration0: 1.0
+
+linear_sched:
+  _target_: torch.distributions.Uniform
+  low: 0.0
+  high: 1.0
+
+sample_time_strategy: linear
+
+module:
+  _target_: morph.model.lightning.base.LightningModuleRates
+  insertion_head_mode: ${insertion_head.mode}
+  ins_noise_scale: ${data.ins_noise_scale}
+  ema_decay: 0.999
+  ema_warmup_steps: 5000
+  use_ema_for_eval: true
+  time_dist: ${if:${eq:${model.sample_time_strategy}, log}, ${model.beta_sched}, ${model.linear_sched}}
+  integrator: ${model.integrator}
+  vocab: ${data.vocab}
+  use_learnable_loss_weights: false
+  use_time_weights: false
+
+  model:
+    _target_: morph.model.backbones.dit.DiTBackboneWithHeads
+    _recursive_: false
+
+    atom_type_embedding_args: ${embeddings.atom_type_embedding}
+    edge_type_embedding_args: ${embeddings.edge_type_embedding}
+    time_embedding_args: ${embeddings.time_embedding}
+    node_count_embedding_args: ${embeddings.node_count_embedding}
+    # Sum the existing incident edge embeddings into each atom's input, excluding
+    # NO_BOND, through a zero-initialized projection. Uses the existing heads.
+    incident_bond_embedding: false
+    backbone_model_args: ${model.backbone}
+    heads_args: ${heads.heads}
+    insertion_head_args: ${insertion_head.model}
+    ins_edge_head_args: ${heads.ins_edge_head}
+
+head_node_dim: ${model.backbone.out_node_nf}
+head_edge_dim: ${model.backbone.out_edge_nf}
+
+# Shared adapters avoid seven separate full-width MLPs.  At the >150M preset,
+# node/insertion adapters widen while pair readouts remain compact.
+head_node_adapter_dim: 256
+head_edge_adapter_dim: 256
+head_insertion_adapter_dim: 256
+head_insertion_edge_dim: 256
+head_independent_adapters: true
+
+# Categorical biases are replaced at module construction with exact dataset
+# marginals.  There is no dataset-level transition-frequency statistic for the
+# binary/rate heads, so their defaults deliberately preserve the old neutral
+# predictions instead of inventing a corpus-independent edit prior.
+head_initialization:
+  output_std: 1.0e-3
+  coordinate_output_std: 0.0
+  do_del_probability: 0.5
+  do_sub_a_probability: 0.5
+  do_sub_e_probability: 0.5
+  ins_rate: 0.6931471805599453
+
+token_weighting:
+  type_loss_token_weights: uniform
+  weight_alpha: 0.4
+
+# Optional low-rank adaptation of the attention and SwiGLU projections. The
+# adapter residual is zero at initialization, so enabling this while loading a
+# pretrained checkpoint preserves its outputs exactly.
+lora:
+  enabled: false
+  rank: 8
+  alpha: 8.0
+  dropout: 0.0
+  targets: [qkv, proj, mlp.gate_value, mlp.out_proj]
+  freeze_base: true
+
+backbone:
+  _target_: morph.model.backbones.dit.DiTBackbone
+  _recursive_: false
+  d_input: ${embeddings.atom_type_embedding.out_dim}
+  d_cond: ${oc.eval:"${embeddings.time_embedding.out_dim} + ${embeddings.node_count_embedding.out_dim}"}
+  d_model: 512
+  out_node_nf: 256
+  out_edge_nf: 256
+  num_layers: 8
+  nhead: 16
+  mlp_ratio: 4.0
+  ffn_hidden_dim: null
+  ffn_multiple_of: 64
+  qk_norm: true
+  coordinate_output_init_std: ${model.head_initialization.coordinate_output_std}
+  center_coordinate_output: true
+  in_edge_nf: ${embeddings.edge_type_embedding.out_dim}
+  edge_pair_dim: 256
+  pair_bias_hidden_dim: 32
+  num_atom_types: ${len:${data.vocab.atom_tokens}}
+  lora: ${model.lora}
+  rbf_embedding_args:
+    _target_: morph.model.layers.embedding.RBFEmbedding
+    num_rbf: 128
+    rbf_dmax: 3.5
+    out_dim: 64
+    dropout: 0.0
+    trainable: false

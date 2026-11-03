@@ -1,0 +1,5 @@
+defaults:
+  - /data/geom/geom@_here_
+  - _self_
+
+hydrogen_mode: implicit

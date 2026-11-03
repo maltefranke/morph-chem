@@ -1,0 +1,6 @@
+## Put your model args here
+enabled: true
+project: morph-${data.dataset_name}
+name: ${oc.env:MORPH_RUN_ID,base}
+save_dir: .
+offline: false

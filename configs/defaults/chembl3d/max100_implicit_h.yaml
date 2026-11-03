@@ -1,0 +1,10 @@
+# @package _global_
+defaults:
+  - /defaults/chembl3d/max100
+  - override /data: chembl3d/max100_implicit_h
+  - _self_
+
+# Train from scratch: the atom vocabulary/statistics differ from the H model.
+# Evaluate every epoch and save both checkpoint callbacks every five epochs.
+logging:
+  project: morph-chembl3d-implicit-h

@@ -1,0 +1,5 @@
+# @package _global_
+defaults:
+  - /defaults/core
+  - /data: chembl3d/implicit_h
+  - /embeddings: geom

@@ -1,0 +1,13 @@
+# Default insertion-content head: one nearest pending atom per spawning node.
+mode: unimodal
+dimension: 3
+num_components: 1
+
+model:
+  _target_: morph.model.layers.heads.UnimodalInsertionHead
+  hidden_dim: ${model.head_node_dim}
+  readout_dim: ${model.head_insertion_adapter_dim}
+  output_init_std: ${model.head_initialization.output_std}
+  independent_adapters: ${oc.select:model.head_independent_adapters,false}
+  N_a: ${len:${data.vocab.atom_tokens}}
+  N_c: ${len:${data.vocab.charge_tokens}}

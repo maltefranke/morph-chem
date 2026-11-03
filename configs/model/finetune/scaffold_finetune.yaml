@@ -1,0 +1,142 @@
+# DiT backbone augmented with Flamingo-style gated cross-attention for
+# scaffold-decoration fine-tuning.
+#
+# Conditioning (all derived from mol_t.keep_mask):
+#   - node_cond : per-atom scaffold membership            (always on)
+#   - edge_cond : per-edge scaffold class                 (always on)
+#   - cross-attn: scaffold subgraph encoded by a shared LightweightContextEncoder
+#                 (OPTIONAL — toggle via backbone.use_cross_attn):
+#                   * false → option 1: node+edge only
+#                   * true  → option 2: node+edge+cross-attn
+#
+# Inherits everything from configs/model/backbones/dit.yaml and overrides:
+#   - module._target_ → LightningModuleRatesScaffoldFinetune (loads a pretrained
+#       unconditional DiT checkpoint and adds scaffold loss/inference masking)
+#   - model._target_  → ScaffoldConditionalDiTBackboneWithHeads (auto-builds the
+#       node/edge cond and, when use_cross_attn, the scaffold cross-attn tokens)
+#   - backbone._target_ → ConditionalDiTBackbone (DiT + gated cross-attn blocks)
+#
+# Provides a ``pretrained_ckpt`` field for the lightning module to load.
+defaults:
+  - /model/backbones/dit@_here_
+  - _self_
+
+module:
+  _target_: morph.model.finetune.scaffold.LightningModuleRatesScaffoldFinetune
+  # Path to the unconditional DiT checkpoint to load weights from.
+  # ConditionalDiT keys are auto-retargeted (backbone.* → backbone.dit.*).
+  pretrained_ckpt: ${oc.env:MORPH_PRETRAINED_CKPT}
+  pretrained_prefer_ema: true
+  # If true, dispatches to ``self.model.freeze_pretrained()`` — for the
+  # cross-attn scaffold model this freezes the entire clean lane
+  # (embedding, ``backbone.dit``, all heads). Only the gated cross-attn
+  # blocks and edge gate plus the scaffold encoder train.
+  freeze_pretrained_backbone: true
+  # Independently freeze prediction/insertion heads and the coordinate readout.
+  # Follow backbone freezing by default; false trains heads with a frozen backbone.
+  freeze_output_heads: ${.freeze_pretrained_backbone}
+  optimizer_config:
+    optimizer:
+      lr: 1e-3
+    aux_optimizer:
+      lr: 1e-4
+  # Retained identities/internal bonds are fixed; scaffold coordinates are
+  # denoised and supervised, matching the original scaffold training protocol.
+  exclude_scaffold_from_sub_loss: true
+  exclude_scaffold_from_x_loss: false
+  # Let scaffold coordinates move during integration. Training-only 0.1 A
+  # jitter is configured in the scaffold data preset; inference adds none.
+  freeze_keep_positions: false
+  # Keep input formal charges and exclude them from the charge loss. Set false
+  # to predict scaffold charges and supervise them during fine-tuning, separately
+  # from the atom-type/internal-bond exclusion above.
+  freeze_keep_charges: true
+
+  # Override the model target to the scaffold-aware cross-attn wrapper.
+  model:
+    _target_: morph.model.finetune.scaffold.ScaffoldConditionalDiTBackboneWithHeads
+    _recursive_: false
+
+    atom_type_embedding_args: ${embeddings.atom_type_embedding}
+    edge_type_embedding_args: ${embeddings.edge_type_embedding}
+    time_embedding_args: ${embeddings.time_embedding}
+    node_count_embedding_args: ${embeddings.node_count_embedding}
+
+    backbone_model_args: ${model.backbone}
+
+    heads_args: ${heads.heads}
+    insertion_head_args: ${insertion_head.model}
+    ins_edge_head_args: ${heads.ins_edge_head}
+
+    # Cross-attention context encoder (option 2). Required because the backbone
+    # below has use_cross_attn: true. For option 1 (node+edge only), set
+    # backbone.use_cross_attn=false AND null this (the two must agree).
+    xattn_encoder_args: ${model.xattn_encoder}
+    # Geometric correspondence prior (query atom ↔ co-located scaffold token).
+    use_distance_bias: true
+
+# Cross-attention context encoder (option 2): encodes the scaffold subgraph of
+# mol_t (extracted via filter_nodes) into context tokens. ctx_dim must match
+# model.backbone.ctx_dim.
+# Node/edge conditioning is NOT configured here — the wrapper builds those directly
+# from backbone.d_model / backbone.in_edge_nf. Null this (and set
+# backbone.use_cross_attn=false) for node+edge-only scaffold conditioning.
+xattn_encoder:
+  _target_: morph.model.finetune.base.LightweightContextEncoder
+  num_atom_types: ${len:${data.vocab.atom_tokens}}
+  num_charges: ${len:${data.vocab.charge_tokens}}
+  atom_embed_dim: 64
+  charge_embed_dim: 16
+  pos_embed_dim: 32
+  ctx_dim: ${model.backbone.ctx_dim}
+  num_attn_layers: 4
+  nhead: 8
+  mlp_ratio: 4.0
+  dropout: 0.0
+  # Edge-based pair bias on the encoder's self-attention (RBF distance +
+  # edge-type of the scaffold's own bonds) so tokens mix with geometry/topology
+  # awareness, like the DiT backbone. num_edge_types/edge_embed_dim only used here.
+  use_pair_bias: true
+  num_edge_types: ${len:${data.vocab.edge_tokens}}
+  edge_embed_dim: 32
+  num_rbf: 32
+  rbf_dmax: 5.0
+  pair_bias_hidden_dim: 32
+
+# Override the backbone to use ConditionalDiTBackbone.
+backbone:
+  _target_: morph.model.backbones.conditional_dit.ConditionalDiTBackbone
+  _recursive_: false
+  d_input: ${embeddings.atom_type_embedding.out_dim}
+  d_cond: ${oc.eval:"${embeddings.time_embedding.out_dim} + ${embeddings.node_count_embedding.out_dim}"}
+  d_model: 512
+  out_node_nf: 256
+  out_edge_nf: 256
+  num_layers: 8
+  nhead: 16
+  mlp_ratio: 4.0
+  ffn_hidden_dim: null
+  ffn_multiple_of: 64
+  qk_norm: true
+  coordinate_output_init_std: ${model.head_initialization.coordinate_output_std}
+  center_coordinate_output: true
+  in_edge_nf: ${embeddings.edge_type_embedding.out_dim}
+  edge_pair_dim: 256
+  pair_bias_hidden_dim: 32
+  num_atom_types: ${len:${data.vocab.atom_tokens}}
+  lora: ${model.lora}
+  ctx_dim: 128
+  use_cross_attn: true   # cross-attention (cond_tokens) port
+  # Opt in to normalized attention-branch conditioning before native AdaLN.
+  cross_attn_position: residual  # residual (legacy) or post_norm1
+  # Per-node conditioning: scaffold membership (which atoms to keep).
+  use_node_cond: true
+  # Per-edge conditioning: the scaffold encoder emits edge_cond at in_edge_nf.
+  use_edge_cond: true
+  rbf_embedding_args:
+    _target_: morph.model.layers.embedding.RBFEmbedding
+    num_rbf: 128
+    rbf_dmax: 3.5
+    out_dim: 64
+    dropout: 0.0
+    trainable: false

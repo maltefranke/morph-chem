@@ -1,0 +1,27 @@
+# Absolute-logP fine-tuning of the pretrained molecular DiT.
+defaults:
+  - /model/backbones/dit@_here_
+  - _self_
+
+lora:
+  enabled: false
+  freeze_base: false
+
+module:
+  _target_: morph.model.finetune.logp.LightningModuleRatesLogPFinetune
+  pretrained_ckpt: ${oc.env:MORPH_PRETRAINED_CKPT}
+  pretrained_prefer_ema: true
+  freeze_pretrained_backbone: false
+  freeze_output_heads: false
+  optimizer_config:
+    optimizer:
+      lr: 1e-3
+    aux_optimizer:
+      lr: 1e-4
+  model:
+    _target_: morph.model.finetune.logp.LogPDiTBackboneWithHeads
+    logp_hidden_dim: 256
+
+backbone:
+  _target_: morph.model.backbones.conditional_dit.ConditionalDiTBackbone
+  use_graph_cond: true

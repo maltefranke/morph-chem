@@ -1,0 +1,33 @@
+# Build from source and configuration only. Local datasets, checkpoints,
+# environments, credentials and experiment outputs never enter the context.
+**
+!Dockerfile
+!.dockerignore
+!pyproject.toml
+!uv.lock
+!README.md
+!CITATION.cff
+!LICENSE*
+!NOTICE*
+!run.py
+!setup_env.sh
+!src/
+!src/**
+!configs/
+!configs/**
+!docs/
+!docs/**
+!scripts/
+!scripts/preprocess.py
+!scripts/preprocess_pocket.py
+!scripts/preprocess_properties.py
+!scripts/preprocess_scaffold.py
+!scripts/evaluate_denovo.py
+!scripts/evaluate_scaffold_pocket.py
+!scripts/install_crossdocked_tools.py
+!tests/
+!tests/__init__.py
+!tests/model/
+!tests/model/*.py
+**/__pycache__/
+**/*.py[cod]

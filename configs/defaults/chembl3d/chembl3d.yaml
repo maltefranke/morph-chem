@@ -1,0 +1,5 @@
+# @package _global_
+defaults:
+  - core
+  - /data: chembl3d/chembl3d
+  - /embeddings: geom

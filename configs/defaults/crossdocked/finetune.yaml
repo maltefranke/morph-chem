@@ -1,0 +1,16 @@
+# @package _global_
+defaults:
+  - /defaults/core
+  - /data: crossdocked/finetune
+  - /embeddings: geom
+  - override /model: finetune/pocket_finetune
+  - _self_
+
+trainer:
+  trainer:
+    # ReplaySampler already partitions its stream between DDP ranks.
+    use_distributed_sampler: false
+    check_val_every_n_epoch: 1
+
+logging:
+  project: morph-crossdocked-finetune

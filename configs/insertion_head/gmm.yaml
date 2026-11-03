@@ -1,0 +1,16 @@
+# Optional mixture-density insertion-content head.
+mode: gmm
+dimension: 3
+num_components: 10
+
+model:
+  _target_: morph.model.layers.heads.GMMInsertionHead
+  hidden_dim: ${model.head_node_dim}
+  readout_dim: ${model.head_insertion_adapter_dim}
+  output_init_std: ${model.head_initialization.output_std}
+  num_components: ${insertion_head.num_components}
+  sigma_min: 0.05
+  sigma_max: 2.0
+  sigma_init: 0.5
+  N_a: ${len:${data.vocab.atom_tokens}}
+  N_c: ${len:${data.vocab.charge_tokens}}

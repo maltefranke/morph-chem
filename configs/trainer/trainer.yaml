@@ -1,0 +1,37 @@
+## Put your trainer args here
+trainer:
+  deterministic: warn
+  devices: auto
+  accelerator: auto
+  #precision: 32
+  strategy: ddp_find_unused_parameters_false
+  precision: "bf16-mixed"
+  max_epochs: 3000
+  # Effective global batch = devices * batch_size.train * accumulation. The
+  # native optimizer mixin handles this because it steps Muon + AdamW.
+  accumulate_grad_batches: 1
+  # A validation batch performs full generative integration, so Lightning's
+  # pre-training sanity pass is expensive and does not exercise optimization.
+  num_sanity_val_steps: 0
+  # Muon + AdamW use Lightning manual optimization; clipping is configured in
+  # configs/optimizer/muon_aux_adam.yaml and applied to both branches together.
+  gradient_clip_val: null
+  gradient_clip_algorithm: norm
+
+  # Validation performs full generative integration. The established QM9
+  # training recipes use this cadence so sampling does not dominate fitting.
+  check_val_every_n_epoch: 50
+ # profiler: simple
+
+  # Fixed GLOBAL validation population. run.py converts this to a per-rank
+  # limit, giving the same 4096 molecules on 1, 2 or 4 GPUs.
+  num_val_samples: 4096
+  # Explicit profiling escape hatch; a non-null value takes precedence over
+  # num_val_samples and is interpreted by Lightning per rank.
+  limit_val_batches: null
+  limit_predict_batches: 4
+
+do_train: true
+do_validate: true
+do_predict: true
+checkpoint_path: null

@@ -1,0 +1,27 @@
+defaults:
+  - /model/finetune/pocket_finetune@_here_
+  - _self_
+
+lora:
+  enabled: true
+
+module:
+  _target_: morph.model.finetune.scaffold.LightningModuleRatesScaffoldFinetune
+  freeze_pretrained_backbone: true
+  freeze_output_heads: false
+  optimizer_config:
+    optimizer:
+      lr: 1e-3
+    aux_optimizer:
+      lr: 1e-4
+  exclude_scaffold_from_sub_loss: true
+  exclude_scaffold_from_x_loss: false
+  freeze_keep_positions: false
+  freeze_keep_charges: true
+  model:
+    _target_: morph.model.finetune.pocket.ScaffoldPocketConditionalDiTBackboneWithHeads
+
+backbone:
+  use_node_cond: true
+  use_edge_cond: true
+  use_cross_attn: true

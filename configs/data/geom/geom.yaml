@@ -1,0 +1,11 @@
+# GEOM-Drugs source format and default molecule subset.
+defaults:
+  - /data/molecular@_here_
+  - _self_
+
+dataset_name: geom
+dataset_target: morph.dataset.unconditional.geom.FlowMatchingGEOMDataset
+source_dir: ${oc.env:GEOM_SOURCE_DIR,null} # Optional prefiltered pickle directory.
+# Preserve the established GEOM subset. Limits apply before hydrogen removal.
+max_atoms: 72
+allowed_atom_symbols: [H, C, N, O, S, F, Cl, Br, P, I]

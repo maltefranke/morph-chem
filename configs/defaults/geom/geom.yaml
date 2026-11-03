@@ -1,0 +1,31 @@
+# @package _global_
+# Default GEOM-Drugs recipe: shared core + explicit-H GEOM data and embeddings.
+defaults:
+  - /defaults/core
+  - /data: geom/geom
+  - /embeddings: geom
+  - _self_
+
+# Loader settings from the released GEOM-Drugs training run.
+data:
+  datamodule:
+    batch_size:
+      train: 320
+      val: 32
+      test: 32
+    num_workers:
+      train: 20
+    train_prefetch_factor: 1
+
+# Evaluate every epoch; keep every fifth completed epoch for releases/resuming.
+trainer:
+  trainer:
+    check_val_every_n_epoch: 1
+
+callbacks:
+  model_checkpoints:
+    every_n_epochs: 5
+  every_n_epochs_checkpoint:
+    every_n_epochs: 5
+    save_top_k: -1
+    save_last: link

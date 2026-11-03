@@ -1,0 +1,15 @@
+# @package model.module.loss_weights
+# Canonical tuned weights for molecular training. Backbones can select this
+# preset explicitly, and task-specific experiments may override the group. The
+# package directive mounts the values under model.module.loss_weights.
+do_sub_a: 0.2
+sub_a_class: 0.03
+do_sub_e: 0.25
+sub_e_class: 0.5
+do_del: 0.4
+ins_rate: 0.15
+ins_state: 0.01
+ins_e: 0.4
+x: 2.0 # was 1.0
+c: 0.5
+ins_e_ii: 0.03

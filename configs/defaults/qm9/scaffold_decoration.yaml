@@ -1,0 +1,27 @@
+# @package _global_
+# QM9 **scaffold decoration** fine-tune preset.
+#
+# Bare-scaffold source → full-molecule target. The model learns to grow
+# a molecule by inserting decoration atoms while scaffold coordinates may move.
+defaults:
+  - core
+  - /data: qm9/scaffold_decoration
+  - /embeddings: qm9
+  - override /model: finetune/scaffold_finetune
+  - _self_
+
+# Evaluate each completed epoch; retain checkpoints every five epochs.
+trainer:
+  trainer:
+    check_val_every_n_epoch: 1
+
+callbacks:
+  model_checkpoints:
+    every_n_epochs: 5
+  every_n_epochs_checkpoint:
+    every_n_epochs: 5
+    save_top_k: -1
+    save_last: link
+
+logging:
+  project: morph-${data.dataset_name}-scaffold-decoration

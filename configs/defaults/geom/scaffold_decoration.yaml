@@ -1,0 +1,39 @@
+# @package _global_
+# GEOM-Drugs **scaffold decoration** fine-tune preset.
+#
+# Mirrors defaults/qm9/scaffold_decoration.yaml on GEOM-Drugs. Bare-scaffold
+# source -> full-molecule target: the model learns to grow a molecule by
+# inserting decoration atoms while allowing scaffold coordinates to move.
+#
+# Differences from the QM9 scaffold preset:
+#   - data       -> geom/scaffold_decoration (GEOM base datasets)
+#   - embeddings -> geom
+#
+# Reuses the scaffold_finetune model config (loads the pretrained unconditional
+# DiT into the clean lane + adds the node/edge conditioning and the gated
+# cross-attn blocks).
+#
+# Pair with a GEOM unconditional DiT checkpoint via
+# ``model.module.pretrained_ckpt=...``.
+defaults:
+  - /defaults/core
+  - /data: geom/scaffold_decoration
+  - /embeddings: geom
+  - override /model: finetune/scaffold_finetune
+  - _self_
+
+# Evaluate each completed epoch; retain checkpoints every five epochs.
+trainer:
+  trainer:
+    check_val_every_n_epoch: 1
+
+callbacks:
+  model_checkpoints:
+    every_n_epochs: 5
+  every_n_epochs_checkpoint:
+    every_n_epochs: 5
+    save_top_k: -1
+    save_last: link
+
+logging:
+  project: morph-${data.dataset_name}-scaffold-decoration

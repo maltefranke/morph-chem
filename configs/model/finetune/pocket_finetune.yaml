@@ -1,0 +1,32 @@
+defaults:
+  - /model/backbones/dit@_here_
+  - _self_
+
+module:
+  _target_: morph.model.finetune.base.LightningModuleRatesFinetune
+  pretrained_ckpt: ${oc.env:MORPH_PRETRAINED_CKPT}
+  pretrained_prefer_ema: true
+  # Replay supplies a retention objective for the trainable pretrained weights.
+  freeze_pretrained_backbone: false
+  freeze_output_heads: false
+  model:
+    _target_: morph.model.finetune.pocket.PocketConditionalDiTBackboneWithHeads
+    encoder_args: ${model.pocket_encoder}
+    use_distance_bias: true
+
+backbone:
+  _target_: morph.model.backbones.conditional_dit.ConditionalDiTBackbone
+  ctx_dim: 128
+  use_cross_attn: true
+  cross_attn_position: residual  # residual (legacy) or post_norm1
+  use_node_cond: false
+  use_edge_cond: false
+
+pocket_encoder:
+  _target_: morph.model.finetune.pocket.PocketContextEncoder
+  num_atom_types: ${len:${data.pocket_vocab.atom_tokens}}
+  num_charges: ${len:${data.pocket_vocab.charge_tokens}}
+  ctx_dim: ${model.backbone.ctx_dim}
+  num_attn_layers: 2
+  nhead: 8
+  dropout: 0.0

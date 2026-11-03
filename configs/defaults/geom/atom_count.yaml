@@ -1,0 +1,20 @@
+# @package _global_
+# Pair with GEOM explicit-H epoch_100.ckpt and its original processed dataset.
+defaults:
+  - /defaults/geom/geom
+  - override /model: finetune/atom_count
+  - _self_
+
+data:
+  datamodule:
+    _target_: morph.dataset.conditional.atom_count.AtomCountLightningDataModule
+
+# In-fit validation runs every epoch; both checkpoint callbacks fire every five
+# epochs through the GEOM preset. Save once more when fit stops (e.g. max_time).
+trainer:
+  do_validate: false
+  do_predict: false
+  final_checkpoint_path: final.ckpt
+
+logging:
+  project: morph-geom-atom-count

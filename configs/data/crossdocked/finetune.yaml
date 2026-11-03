@@ -1,0 +1,67 @@
+defaults:
+  - /data/molecular@_here_
+  - _self_
+
+dataset_name: crossdocked
+dataset_target: morph.dataset.conditional.pocket.CrossDockedPocketDataset
+hydrogen_mode: implicit
+root: ${data.root_path}/crossdocked
+source_dir: ${oc.env:MORPH_CROSSDOCKED_RAW,null}
+pretrained_assets_root: ${oc.env:MORPH_PRETRAINED_ASSETS}
+pretrain_root: ${data.root_path}/chembl3d_implicit_h
+pretrain_source_dir: ${oc.env:CHEMBL3D_SOURCE_DIR,null}
+pretrain_max_atoms: null
+pretrain_allowed_atom_symbols: null
+finetune_fraction: 0.5 # p / 100, sampled per example with replacement
+train_epoch_size: null # source draws per epoch; defaults to retained fine-tuning size
+pocket_vocab: null # Filled from TRAIN pocket elements during datamodule setup.
+max_pocket_atoms: 512
+val_fraction: 0.02
+
+# Load the exact artifacts associated with the pretrained checkpoint.
+# Never discover a new ligand vocabulary/normalization for fine-tuning.
+preprocessing:
+  root: ${data.pretrained_assets_root}
+  train_dataset: null
+  atom_tokens_path: ${data.preprocessing.root}/atom_tokens.txt
+  edge_tokens_path: ${data.preprocessing.root}/edge_tokens.txt
+  charge_tokens_path: ${data.preprocessing.root}/charge_tokens.txt
+  distributions_path: ${data.preprocessing.root}/distributions.pt
+
+datamodule:
+  _target_: morph.dataset.conditional.pocket.datamodule.PocketLightningDataModule
+  pocket_vocab: ${data.pocket_vocab}
+  finetune_fraction: ${data.finetune_fraction}
+  train_epoch_size: ${data.train_epoch_size}
+  mix_seed: ${seed}
+  pretrain_dataset:
+    _target_: morph.dataset.unconditional.chembl3d.FlowMatchingChEMBL3DDataset
+    root: ${data.pretrain_root}
+    source_dir: ${data.pretrain_source_dir}
+    hydrogen_mode: ${data.hydrogen_mode}
+    max_atoms: ${data.pretrain_max_atoms}
+    allowed_atom_symbols: ${data.pretrain_allowed_atom_symbols}
+    preprocess_workers: ${data.preprocess_workers}
+    preprocess_chunk_size: ${data.preprocess_chunk_size}
+  datasets:
+    train:
+      root: ${data.root}
+      allowed_atom_symbols: null
+      max_pocket_atoms: ${data.max_pocket_atoms}
+      val_fraction: ${data.val_fraction}
+    val:
+      - _target_: ${data.dataset_target}
+        root: ${data.root}
+        source_dir: ${data.source_dir}
+        hydrogen_mode: ${data.hydrogen_mode}
+        max_pocket_atoms: ${data.max_pocket_atoms}
+        val_fraction: ${data.val_fraction}
+        preprocess_workers: ${data.preprocess_workers}
+    test:
+      - _target_: ${data.dataset_target}
+        root: ${data.root}
+        source_dir: ${data.source_dir}
+        hydrogen_mode: ${data.hydrogen_mode}
+        max_pocket_atoms: ${data.max_pocket_atoms}
+        val_fraction: ${data.val_fraction}
+        preprocess_workers: ${data.preprocess_workers}

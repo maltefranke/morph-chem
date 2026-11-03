@@ -1,0 +1,17 @@
+# Full finetuning of the Fourier-conditioned model, including count projections.
+defaults:
+  - /model/finetune/atom_count_fourier@_here_
+  - _self_
+
+lora:
+  enabled: false
+  freeze_base: false
+
+module:
+  freeze_pretrained_backbone: false
+  freeze_output_heads: false
+  optimizer_config:
+    optimizer:
+      lr: 3e-4
+    aux_optimizer:
+      lr: 3e-5

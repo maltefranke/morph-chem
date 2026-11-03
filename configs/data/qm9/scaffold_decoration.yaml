@@ -1,0 +1,32 @@
+# QM9 data config for the **scaffold decoration** task.
+#
+# Source is the selected scaffold of each target; target is the full molecule.
+# The model learns to grow the molecule by inserting decoration atoms
+# while denoising the retained scaffold.
+#
+# Inherits from configs/data/qm9/qm9.yaml and overrides:
+#   - datamodule._target_ → ScaffoldLightningDataModule
+#
+defaults:
+  - /data/qm9/qm9@_here_
+  - _self_
+
+scaffold_groups_dir: ${data.root_path}/qm9/processed/scaffold_groups
+scaffold_kind: rgroup # murcko, rgroup (BRICS), heavy (generate H), linker
+# Physical Angstroms, per coordinate axis. Used only by training interpolation.
+jitter_scale: 0.1
+interpolator:
+  jitter_scale: ${data.jitter_scale}
+# Exhaustive evaluation when eval_panel=null; training always draws randomly.
+enumerate_slicings: false
+eval_panel:
+  directory: ${data.scaffold_groups_dir}/eval_panels
+  n_scaffolds: 512
+  samples_per_scaffold: 8
+  seed: 42
+datamodule:
+  _target_: morph.dataset.conditional.scaffold.datamodule.ScaffoldLightningDataModule
+  scaffold_groups_dir: ${data.scaffold_groups_dir}
+  scaffold_kind: ${data.scaffold_kind}
+  enumerate_slicings: ${data.enumerate_slicings}
+  eval_panel: ${data.eval_panel}

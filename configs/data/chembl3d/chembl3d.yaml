@@ -1,0 +1,8 @@
+# LoQI ChEMBL3D source format, without dataset-specific size/element filters.
+defaults:
+  - /data/molecular@_here_
+  - _self_
+
+dataset_name: chembl3d
+dataset_target: morph.dataset.unconditional.chembl3d.FlowMatchingChEMBL3DDataset
+source_dir: ${oc.env:CHEMBL3D_SOURCE_DIR,null}

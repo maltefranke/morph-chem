@@ -1,0 +1,109 @@
+## QM9 data and preprocessing configuration.
+
+dataset_name: qm9
+root_path: ${oc.env:PROJECT_ROOT}/data
+preprocess_workers: 0
+
+n_atoms_strategy: "uniform" # "approx", "empirical", "learned"
+# Expand both ends of the empirical count support for the uniform flow source.
+# QM9's minimum is already the hard lower bound of 3, so positive padding is
+# necessarily asymmetric; set to 0 for an unpadded 3--29 diagnostic prior.
+uniform_n_atoms_padding: 5
+optimal_transport: "equivariant"
+# Physical Angstroms (converted to normalized coordinates internally). Insertion
+# bridge noise vanishes as (1-t); move noise is the persistent training-time
+# jitter floor for matched atoms and insertions that are already present.
+ins_noise_scale: 0.35
+move_noise_scale: 0.3
+
+# QM9 contains only neutral molecules; charged species are treated as invalid.
+allow_charged: false
+
+
+# Preprocessing configuration - computes tokens from data and distributions from training dataset only
+preprocessing:
+  _target_: morph.dataset.core.preprocessing.Preprocessing
+  _recursive_: false
+  root: ${data.root_path}/qm9
+  num_workers: ${data.preprocess_workers}
+  train_dataset: ${data.datamodule.datasets.train}
+  # Canonical (representation-agnostic) cache. One preprocessing per dataset;
+  # representation-specific projection happens at runtime in the wrapper.
+  atom_tokens_path: ${data.preprocessing.root}/processed/atom_tokens.txt
+  edge_tokens_path: ${data.preprocessing.root}/processed/edge_tokens.txt
+  charge_tokens_path: ${data.preprocessing.root}/processed/charge_tokens.txt
+  distributions_path: ${data.preprocessing.root}/processed/distributions.pt
+
+vocab: None
+
+interpolator:
+  _target_: morph.flow_matching.interpolation.Interpolator
+  distributions: None
+  optimal_transport: ${data.optimal_transport}
+  ins_noise_scale: ${data.ins_noise_scale}
+  move_noise_scale: ${data.move_noise_scale}
+  # Expose the aligned source graph as mol_t.contexts["prior"] during training.
+  include_prior_context: false
+  # OT matching (cost always squared-Euclidean; move cost in Angstrom). c_move
+  # scales the squared move distance (A^2); c_ins/c_del/c_sub are fixed A^2 costs,
+  # directly comparable. At 6.125 each, delete+insert costs 3.5^2, so atoms
+  # farther than 3.5 A apart are left unmatched by default.
+  pre_align_iters: 2   # equivariant-OT inner loop (Hungarian+Kabsch) iters
+  c_move: 1.0
+  c_sub: 0.0
+  c_ins: 6.125
+  c_del: 6.125
+  del_schedule: ${schedule}
+  ins_schedule: ${schedule}
+  sub_schedule:
+    _target_: morph.flow_matching.schedules.SmoothstepSchedule
+    shift: 1.5
+  sub_e_schedule:
+    _target_: morph.flow_matching.schedules.SmoothstepSchedule
+    shift: 1.5
+
+datamodule:
+  _target_: morph.dataset.core.lightning_datamodule.LightningDataModule
+  # tokens and distributions will be passed from preprocessing in run.py
+
+  vocab: ${data.vocab}
+  distributions: None
+  representation: ${representation}
+
+  datasets:
+    train:
+      _target_: morph.dataset.unconditional.qm9.FlowMatchingQM9Dataset
+      root: ${data.root_path}/qm9
+      vocab: ${data.vocab}
+      distributions: None
+
+    val:
+      - _target_: morph.dataset.unconditional.qm9.FlowMatchingQM9Dataset
+        root: ${data.root_path}/qm9
+        vocab: ${data.vocab}
+        distributions: None
+
+    test:
+      - _target_: morph.dataset.unconditional.qm9.FlowMatchingQM9Dataset
+        root: ${data.root_path}/qm9
+        vocab: ${data.vocab}
+        distributions: None
+
+  interpolator: ${data.interpolator}
+
+  rotate: ${model.rotate}
+  n_augmentations: ${model.n_augmentations}
+
+  num_workers:
+    train: 10
+    val: 0
+    test: 0
+
+  batch_size:
+    train: 1024
+    val: 128
+    test: 32
+
+  n_atoms_strategy: ${data.n_atoms_strategy}
+  uniform_n_atoms_padding: ${data.uniform_n_atoms_padding}
+  time_dist: ${model.module.time_dist}

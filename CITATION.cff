@@ -1,0 +1,36 @@
+cff-version: 1.2.0
+message: "If you use Morph, please cite the accompanying paper."
+type: software
+title: Morph
+license: MIT
+authors:
+  - family-names: Franke
+    given-names: Malte
+  - family-names: Schmid
+    given-names: Stefan P.
+  - family-names: Ivkovic
+    given-names: Zarko
+  - family-names: Jorner
+    given-names: Kjell
+  - family-names: Krause
+    given-names: Andreas
+repository-code: "https://github.com/maltefranke/morph-chem"
+preferred-citation:
+  type: generic
+  title: "Generative Molecular Morphing for Flexible-Size Design via Unbalanced Optimal Transport"
+  authors:
+    - family-names: Franke
+      given-names: Malte
+    - family-names: Schmid
+      given-names: Stefan P.
+    - family-names: Ivkovic
+      given-names: Zarko
+    - family-names: Jorner
+      given-names: Kjell
+    - family-names: Krause
+      given-names: Andreas
+  year: 2026
+  url: "https://arxiv.org/abs/2606.07239"
+  identifiers:
+    - type: other
+      value: "arXiv:2606.07239"

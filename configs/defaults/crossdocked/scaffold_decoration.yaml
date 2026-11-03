@@ -1,0 +1,9 @@
+# @package _global_
+defaults:
+  - /defaults/crossdocked/finetune
+  - override /data: crossdocked/scaffold_decoration
+  - override /model: finetune/scaffold_pocket_finetune
+  - _self_
+
+logging:
+  project: morph-crossdocked-scaffold-finetune

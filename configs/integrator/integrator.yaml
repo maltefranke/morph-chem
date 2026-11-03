@@ -1,0 +1,30 @@
+integrator:
+  _target_: morph.flow_matching.integration.RateIntegrator
+  vocab: ${data.vocab}
+  distributions: None
+  insertion_head_mode: ${insertion_head.mode}
+  insertion_dimension: ${insertion_head.dimension}
+  insertion_num_components: ${insertion_head.num_components}
+  # strategy used for sampling time during **integration**
+  # NOTE can be different from the time strategy used for the model (see below)
+  time_strategy: log # "linear", "log", or "beta"
+  # shape params for time_strategy: beta (Beta inverse-CDF spacing).
+  # defaults match the model's beta_sched (concentration1=2.0, concentration0=1.0)
+  time_beta_alpha: 2.0
+  time_beta_beta: 1.0
+  num_integration_steps: 100
+  ins_noise_scale: ${data.ins_noise_scale}
+  # When true, freshly-inserted nodes are pushed to the t+dt marginal (kappa-mix
+  # on atom/bond types, (1-t)*ins_noise on x) to match training. Charge remains
+  # a clean prediction target rather than an interpolated state. When false,
+  # insertions enter at the model's clean prediction.
+  renoise_insertions: true
+  # Integrate the known categorical schedule hazard over every time interval
+  # instead of using its left-endpoint Euler approximation.
+  # With either method, the final interval always completes pending discrete
+  # transitions using the learned edit probabilities (no extra model call).
+  exact_schedule_integration: true
+  del_schedule: ${data.interpolator.del_schedule}
+  ins_schedule: ${data.interpolator.ins_schedule}
+  sub_schedule: ${data.interpolator.sub_schedule}
+  sub_e_schedule: ${data.interpolator.sub_e_schedule}

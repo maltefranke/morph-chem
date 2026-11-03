@@ -1,0 +1,5 @@
+# @package _global_
+defaults:
+  - /defaults/core
+  - /data: geom/implicit_h
+  - /embeddings: geom

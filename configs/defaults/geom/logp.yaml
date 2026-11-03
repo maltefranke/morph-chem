@@ -1,0 +1,27 @@
+# @package _global_
+defaults:
+  - /defaults/geom/geom
+  - override /model: finetune/logp
+  - _self_
+
+data:
+  datamodule:
+    _target_: morph.dataset.conditional.logp.LogPLightningDataModule
+    datasets:
+      train:
+        compute_properties: true
+        property_names: [logp]
+      val:
+        - ${data.datamodule.datasets.train}
+      test:
+        - ${data.datamodule.datasets.train}
+
+trainer:
+  do_validate: false
+  do_predict: false
+  final_checkpoint_path: final.ckpt
+  trainer:
+    max_epochs: 50
+
+logging:
+  project: morph-geom-logp

@@ -1,0 +1,40 @@
+# @package _global_
+defaults:
+  - /defaults/core
+  - /data: chembl3d/max100
+  - /embeddings: geom
+  - _self_
+
+# Loader and checkpoint settings for the released max100 ChEMBL models.
+# Batch sizes are per device; choose the GPU count at launch.
+data:
+  datamodule:
+    train_prefetch_factor: 1
+    batch_size:
+      train: 320
+      val: 32
+      test: 32
+    num_workers:
+      train: 20
+      val: 2
+      test: 2
+
+trainer:
+  trainer:
+    accumulate_grad_batches: 1
+    # Set max_epochs or max_time at launch to bound the run.
+    max_epochs: -1
+    check_val_every_n_epoch: 1
+    num_val_samples: 4096
+  # Validation runs during fit; leave wall-clock headroom for final checkpointing.
+  do_validate: false
+  do_predict: false
+  final_checkpoint_path: final.ckpt
+
+callbacks:
+  model_checkpoints:
+    every_n_epochs: 5
+  every_n_epochs_checkpoint:
+    every_n_epochs: 5
+    save_top_k: -1
+    save_last: link

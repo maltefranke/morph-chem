@@ -1,0 +1,20 @@
+defaults:
+  - /model/finetune/lora_finetune@_here_
+  - _self_
+
+lora:
+  rank: 32
+  alpha: 32.0
+
+module:
+  _target_: morph.model.finetune.atom_count.LightningModuleRatesAtomCountFinetune
+  freeze_output_heads: false
+  optimizer_config:
+    optimizer:
+      lr: 1e-3
+    aux_optimizer:
+      lr: 1e-4
+  model:
+    _target_: morph.model.finetune.atom_count.AtomCountDiTBackboneWithHeads
+    delta_scale: 64.0
+    delta_hidden_dim: 128

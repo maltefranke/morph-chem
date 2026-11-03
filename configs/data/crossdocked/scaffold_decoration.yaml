@@ -1,0 +1,31 @@
+defaults:
+  - /data/crossdocked/finetune@_here_
+  - _self_
+
+# Morph's DiffDec task uses LibINVENT reaction cuts. Other shared cutters can
+# be selected explicitly (murcko, rgroup, linker).
+scaffold_kind: libinvent
+scaffold_groups_dir: ${data.root}/scaffold_groups
+enumerate_slicings: true
+# Fixed scaffold/pocket pairs with repeated draws enable retention, recovery,
+# within-condition uniqueness/diversity, RMSD, and scaffold-aware PoseBusters.
+# Unlike a topology-only panel, identical scaffolds in different pockets remain
+# distinct conditions. Splits with fewer pairs use all of them.
+eval_panel:
+  n_scaffolds: 512
+  samples_per_scaffold: 8
+  seed: 42
+# Denoise movable scaffold coordinates; physical Angstroms, training only.
+jitter_scale: 0.1
+insertion_assignment: nearest
+interpolator:
+  insertion_assignment: ${data.insertion_assignment}
+  jitter_scale: ${data.jitter_scale}
+
+datamodule:
+  _target_: morph.dataset.conditional.pocket.scaffold_pocket.ScaffoldPocketDataModule
+  scaffold_groups_dir: ${data.scaffold_groups_dir}
+  scaffold_kind: ${data.scaffold_kind}
+  enumerate_slicings: ${data.enumerate_slicings}
+  eval_panel: ${data.eval_panel}
+  rotate: true

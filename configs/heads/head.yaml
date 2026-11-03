@@ -1,0 +1,75 @@
+# Standard molecular DiT readouts. The insertion-content head is an independent
+# Hydra choice (``insertion_head=unimodal`` by default, or ``=gmm``).
+
+heads:
+  _target_: morph.model.layers.heads.MultiHeadModule
+  output_init_std: ${model.head_initialization.output_std}
+  independent_adapters: ${oc.select:model.head_independent_adapters,false}
+
+  heads_configs:
+    graph_aggregation: mean
+
+    node_heads:
+      atom_type_head:
+        input_dim: ${model.head_node_dim}
+        output_dim: ${len:${data.vocab.atom_tokens}}
+        adapter_dim: ${model.head_node_adapter_dim}
+        group: state
+
+      charge_head:
+        input_dim: ${model.head_node_dim}
+        output_dim: ${len:${data.vocab.charge_tokens}}
+        adapter_dim: ${model.head_node_adapter_dim}
+        group: state
+
+      ins_rate_head:
+        input_dim: ${model.head_node_dim}
+        output_dim: 1
+        adapter_dim: ${model.head_node_adapter_dim}
+        group: edit
+        initial_rate: ${model.head_initialization.ins_rate}
+
+      do_del_head:
+        input_dim: ${model.head_node_dim}
+        output_dim: 1
+        adapter_dim: ${model.head_node_adapter_dim}
+        group: edit
+        initial_probability: ${model.head_initialization.do_del_probability}
+
+      do_sub_a_head:
+        input_dim: ${model.head_node_dim}
+        output_dim: 1
+        adapter_dim: ${model.head_node_adapter_dim}
+        group: edit
+        initial_probability: ${model.head_initialization.do_sub_a_probability}
+
+    edge_heads:
+      edge_type_head:
+        input_dim: ${model.head_edge_dim}
+        output_dim: ${len:${data.vocab.edge_tokens}}
+        adapter_dim: ${model.head_edge_adapter_dim}
+        group: state
+
+      do_sub_e_head:
+        input_dim: ${model.head_edge_dim}
+        output_dim: 1
+        adapter_dim: ${model.head_edge_adapter_dim}
+        group: state
+        initial_probability: ${model.head_initialization.do_sub_e_probability}
+
+ins_edge_head:
+  _target_: morph.model.layers.heads.InsertionEdgeHead
+  _recursive_: false
+  hidden_dim: ${model.head_node_dim}
+  readout_dim: ${model.head_insertion_edge_dim}
+  output_init_std: ${model.head_initialization.output_std}
+  n_edge_types: ${len:${data.vocab.edge_tokens}}
+  n_atom_types: ${len:${data.vocab.atom_tokens}}
+  n_charge_types: ${len:${data.vocab.charge_tokens}}
+  rbf_embedding_args:
+    _target_: morph.model.layers.embedding.RBFEmbedding
+    num_rbf: 128
+    rbf_dmax: 3.5
+    out_dim: 64
+    dropout: 0.0
+    trainable: false

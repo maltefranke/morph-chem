@@ -1,0 +1,5 @@
+defaults:
+  - /data/chembl3d/chembl3d@_here_
+  - _self_
+
+hydrogen_mode: implicit

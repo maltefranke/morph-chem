@@ -1,0 +1,66 @@
+from dataclasses import dataclass
+
+import torch
+
+from morph.utils.vocab_utils import compute_token_weights
+
+
+@dataclass
+class Vocab:
+    """Ordered atom, bond, and charge tokens used by integer labels."""
+
+    atom_tokens: list[str]
+    edge_tokens: list[str]
+    charge_tokens: list[str]
+
+
+@dataclass
+class Distributions:
+    """Empirical token frequencies, size priors, and coordinate statistics."""
+
+    atom_type_distribution: torch.Tensor
+    edge_type_distribution: torch.Tensor
+    charge_type_distribution: torch.Tensor
+    n_atoms_distribution: torch.Tensor
+    coordinate_std: float
+    # Pointcloud-mode evaluation targets in Angstroms (computed on centered,
+    # un-normalized training coords). Shape (A, A, B) with the (lo, hi)
+    # atom-type-index convention; None if not computed.
+    pairwise_distance_histogram: torch.Tensor | None = None
+    # Shape (B,). None if not computed.
+    radius_of_gyration_histogram: torch.Tensor | None = None
+
+
+def setup_token_weights(
+    vocab: Vocab,
+    distributions: Distributions,
+    weight_alpha: float,
+    type_loss_token_weights: str,
+) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    """Compute atom, edge, and charge token weights from training distributions.
+
+    Returns:
+        (atom_type_weights, edge_token_weights, charge_token_weights)
+    """
+    atom_type_weights = compute_token_weights(
+        token_list=vocab.atom_tokens,
+        distribution=distributions.atom_type_distribution,
+        special_token_names=[],
+        weight_alpha=weight_alpha,
+        type_loss_token_weights=type_loss_token_weights,
+    )
+    edge_token_weights = compute_token_weights(
+        token_list=vocab.edge_tokens,
+        distribution=distributions.edge_type_distribution,
+        special_token_names=["<NO_BOND>"],
+        weight_alpha=weight_alpha,
+        type_loss_token_weights=type_loss_token_weights,
+    )
+    charge_token_weights = compute_token_weights(
+        token_list=vocab.charge_tokens,
+        distribution=distributions.charge_type_distribution,
+        special_token_names=[],
+        weight_alpha=weight_alpha,
+        type_loss_token_weights=type_loss_token_weights,
+    )
+    return atom_type_weights, edge_token_weights, charge_token_weights

@@ -1,0 +1,2 @@
+_target_: morph.flow_matching.schedules.SmoothstepSchedule
+shift: 0.8

@@ -1,0 +1,15 @@
+# Parameter-efficient fine-tuning of the unconditional DiT.
+defaults:
+  - /model/backbones/dit@_here_
+  - _self_
+
+lora:
+  enabled: true
+
+module:
+  _target_: morph.model.finetune.base.LightningModuleRatesFinetune
+  pretrained_ckpt: ${oc.env:MORPH_PRETRAINED_CKPT}
+  pretrained_prefer_ema: true
+  freeze_pretrained_backbone: true
+  # Set false to train complete output heads alongside LoRA.
+  freeze_output_heads: ${.freeze_pretrained_backbone}
